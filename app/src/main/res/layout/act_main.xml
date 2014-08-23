@@ -40,19 +40,16 @@
                 android:entries="@array/radiuses"
                 />
 
-            />
-
             <TextView
                 android:text="@string/unit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-
                 />
         </LinearLayout>
 
-        <Button
+        <Switch
             android:id="@+id/anchor"
-            android:text="@string/anchor"
+            android:text="@string/anchored"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -60,12 +57,16 @@
             android:layout_marginLeft="36dp"
             android:layout_marginRight="36dp"
             android:layout_gravity="center"
+            android:textOn="@string/yes"
+            android:textOff="@string/no"
             />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/anchor_info"
+            android:textStyle="italic"
+            android:gravity="center"
             />
 
     </LinearLayout>
@@ -78,7 +79,6 @@
         android:layout_gravity="bottom"
         android:background="@android:color/holo_blue_dark"
         >
-
 
         <TextView
             android:id="@+id/anchor_location"

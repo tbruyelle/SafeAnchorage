@@ -11,9 +11,9 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +30,7 @@ import java.util.Date;
 public class MainActivity extends Activity
         implements GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
-    private Button mAnchorBtn;
+    private Switch mAnchorBtn;
     private Spinner mAlertRadius;
     private TextView mAnchorLocationTxt;
     private TextView mCurrentLocationTxt;
@@ -43,27 +43,37 @@ public class MainActivity extends Activity
             .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     private LatLng mAnchorLatLng;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.act_main);
 
-        mAnchorBtn = (Button) findViewById(R.id.anchor);
-
+        mAnchorBtn = (Switch) findViewById(R.id.anchor);
         mAlertRadius = (Spinner) findViewById(R.id.alert_radius);
-
         mAnchorLocationTxt = (TextView) findViewById(R.id.anchor_location);
         mCurrentLocationTxt = (TextView) findViewById(R.id.current_location);
         mDistanceTxt = (TextView) findViewById(R.id.distance);
 
-        mAnchorBtn.setOnClickListener(new View.OnClickListener() {
+        mLocationClient = new LocationClient(MainActivity.this, MainActivity.this, MainActivity.this);
+
+        mAnchorBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                mLocationClient = new LocationClient(MainActivity.this, MainActivity.this, MainActivity.this);
-                mLocationClient.connect();
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    mLocationClient.connect();
+                } else {
+                    mLocationClient.disconnect();
+                }
             }
         });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mLocationClient.isConnected()) {
+            mLocationClient.disconnect();
+        }
     }
 
     @Override
@@ -102,7 +112,7 @@ public class MainActivity extends Activity
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
                 .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                .setContentTitle("Anchorage radius reached !")
+                .setContentTitle(getString(R.string.anchorage_alert))
 //                .setContentText("Camille a vu quelquechose...")
                 .setContentIntent(contentIntent)
                 .setWhen(new Date().getTime())

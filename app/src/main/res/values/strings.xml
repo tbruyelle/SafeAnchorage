@@ -12,9 +12,11 @@
     <string name="unit">meters</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="anchorage_ready">Ready to check anchor radius</string>
     <string name="anchorage_alert">Anchorage radius reached !</string>
 
     <string-array name="radiuses">
+        <item>5</item>
         <item>20</item>
         <item>30</item>
         <item>40</item>

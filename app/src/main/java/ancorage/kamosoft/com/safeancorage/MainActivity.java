@@ -1,47 +1,28 @@
 package ancorage.kamosoft.com.safeancorage;
 
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.maps.android.SphericalUtil;
-
-import java.util.Date;
 
 
-public class MainActivity extends Activity
-        implements GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+public class MainActivity extends Activity implements Constants {
 
     private Switch mAnchorBtn;
     private Spinner mAlertRadius;
     private TextView mAnchorLocationTxt;
     private TextView mCurrentLocationTxt;
     private TextView mDistanceTxt;
-
-    private LocationClient mLocationClient;
-    private LocationRequest sLocationRequest = LocationRequest.create()
-            .setInterval(8000)
-            .setFastestInterval(4000)
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-    private LatLng mAnchorLatLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,104 +35,42 @@ public class MainActivity extends Activity
         mCurrentLocationTxt = (TextView) findViewById(R.id.current_location);
         mDistanceTxt = (TextView) findViewById(R.id.distance);
 
-        mLocationClient = new LocationClient(MainActivity.this, MainActivity.this, MainActivity.this);
+        mAnchorBtn.setChecked(isMyServiceRunning(LocateService.class));
 
         mAnchorBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    anchorEnable();
+                    startService(new Intent(MainActivity.this, LocateService.class));
                 } else {
-                    anchorDisable();
+                    stopService(new Intent(MainActivity.this, LocateService.class));
                 }
+            }
+        });
+
+        mAlertRadius.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                SharedPreferences prefs = getSharedPreferences(Constants.SHARED_PREF, 0);
+                prefs.edit().putInt(PREFS_RADIUS,
+                        Integer.valueOf((String) mAlertRadius.getSelectedItem())).apply();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mLocationClient.isConnected()) {
-            mLocationClient.disconnect();
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
         }
-    }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-        _anchorEnable();
-    }
-
-    private void anchorEnable() {
-        if (!mLocationClient.isConnected()) {
-            mLocationClient.connect();
-            return;
-        }
-        _anchorEnable();
-    }
-
-    private void _anchorEnable() {
-        mLocationClient.requestLocationUpdates(sLocationRequest, MainActivity.this);
-    }
-
-    private void anchorDisable() {
-        mLocationClient.removeLocationUpdates(this);
-        mAnchorLatLng = null;
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        if (mAnchorLatLng == null) {
-            // First pass
-            mAnchorLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-            mAnchorLocationTxt.setText(mAnchorLatLng.latitude + ", " + mAnchorLatLng.longitude);
-        }
-
-        mCurrentLocationTxt.setText(location.getLatitude() + ", " + location.getLongitude());
-        double d = SphericalUtil.computeDistanceBetween(mAnchorLatLng,
-                new LatLng(location.getLatitude(), location.getLongitude()));
-        mDistanceTxt.setText(d + "m");
-
-        if (d > Integer.valueOf((String) mAlertRadius.getSelectedItem())) {
-            // Distance reached -> Alert!
-            sendNotification();
-        }
-    }
-
-    // Put the message into a notification and post it.
-    // This is just one simple example of what you might choose to do with
-    // a GCM message.
-    private void sendNotification() {
-
-        Intent intent = new Intent(this, MainActivity.class);
-
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                .setContentTitle(getString(R.string.anchorage_alert))
-//                .setContentText("Camille a vu quelquechose...")
-                .setContentIntent(contentIntent)
-                .setWhen(new Date().getTime())
-                .setAutoCancel(true)
-                .setDefaults(Notification.DEFAULT_ALL);
-
-        Notification notification = builder
-                .build();
-
-        NotificationManager notifManager = (NotificationManager)
-                this.getSystemService(Context.NOTIFICATION_SERVICE);
-        notifManager.notify(1, notification);
-    }
-
-    @Override
-    public void onDisconnected() {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Toast.makeText(this, "Unable to connect to Google Play Services", Toast.LENGTH_SHORT).show();
+        return false;
     }
 
     @Override

@@ -60,9 +60,9 @@ public class MainActivity extends Activity
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    mLocationClient.connect();
+                    anchorEnable();
                 } else {
-                    mLocationClient.disconnect();
+                    anchorDisable();
                 }
             }
         });
@@ -78,25 +78,42 @@ public class MainActivity extends Activity
 
     @Override
     public void onConnected(Bundle bundle) {
-        anchorEnable(mLocationClient.getLastLocation());
+        _anchorEnable();
+    }
+
+    private void anchorEnable() {
+        if (!mLocationClient.isConnected()) {
+            mLocationClient.connect();
+            return;
+        }
+        _anchorEnable();
+    }
+
+    private void _anchorEnable() {
         mLocationClient.requestLocationUpdates(sLocationRequest, MainActivity.this);
     }
 
-    private void anchorEnable(Location location) {
-        mAnchorLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-        mAnchorLocationTxt.setText(mAnchorLatLng.latitude + ", " + mAnchorLatLng.longitude);
+    private void anchorDisable() {
+        mLocationClient.removeLocationUpdates(this);
+        mAnchorLatLng = null;
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        if (mAnchorLatLng != null) {
-            mCurrentLocationTxt.setText(location.getLatitude() + ", " + location.getLongitude());
-            double d = SphericalUtil.computeDistanceBetween(mAnchorLatLng,
-                    new LatLng(location.getLatitude(), location.getLongitude()));
-            mDistanceTxt.setText(d + "m");
-            if (d > Integer.valueOf((String) mAlertRadius.getSelectedItem())) {
-                sendNotification();
-            }
+        if (mAnchorLatLng == null) {
+            // First pass
+            mAnchorLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+            mAnchorLocationTxt.setText(mAnchorLatLng.latitude + ", " + mAnchorLatLng.longitude);
+        }
+
+        mCurrentLocationTxt.setText(location.getLatitude() + ", " + location.getLongitude());
+        double d = SphericalUtil.computeDistanceBetween(mAnchorLatLng,
+                new LatLng(location.getLatitude(), location.getLongitude()));
+        mDistanceTxt.setText(d + "m");
+
+        if (d > Integer.valueOf((String) mAlertRadius.getSelectedItem())) {
+            // Distance reached -> Alert!
+            sendNotification();
         }
     }
 

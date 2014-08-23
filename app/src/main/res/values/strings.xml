@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SafeAnchorage</string>
+    <string name="action_settings">Settings</string>
+    <string name="boat_length">Boat length</string>
+    <string name="chain_length">Chain length</string>
+    <string name="anchor">Anchor</string>
+    <string name="please_fill_lengths">Please input the lengths fields</string>
+    <string name="anchor_info">Click at the same time you drop the anchor for best results</string>
+    <string name="alert_radius">Radius gap before alarm</string>
+    <string name="unit">meters</string>
+
+</resources>

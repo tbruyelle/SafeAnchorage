@@ -11,4 +11,12 @@
     <string name="alert_radius">Radius gap before alarm</string>
     <string name="unit">meters</string>
 
+    <string-array name="radiuses">
+        <item>20</item>
+        <item>30</item>
+        <item>40</item>
+        <item>50</item>
+        <item>60</item>
+    </string-array>
+
 </resources>

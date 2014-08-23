@@ -9,12 +9,11 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +31,7 @@ public class MainActivity extends Activity
         implements GooglePlayServicesClient.ConnectionCallbacks, GooglePlayServicesClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
     private Button mAnchorBtn;
-    private EditText mAlertRadius;
+    private Spinner mAlertRadius;
     private TextView mAnchorLocationTxt;
     private TextView mCurrentLocationTxt;
     private TextView mDistanceTxt;
@@ -51,8 +50,8 @@ public class MainActivity extends Activity
         setContentView(R.layout.act_main);
 
         mAnchorBtn = (Button) findViewById(R.id.anchor);
-        // TODO Suggest 20m,30m,40m,50m,60m via a spinner
-        mAlertRadius = (EditText) findViewById(R.id.alert_radius);
+
+        mAlertRadius = (Spinner) findViewById(R.id.alert_radius);
 
         mAnchorLocationTxt = (TextView) findViewById(R.id.anchor_location);
         mCurrentLocationTxt = (TextView) findViewById(R.id.current_location);
@@ -61,10 +60,6 @@ public class MainActivity extends Activity
         mAnchorBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (TextUtils.isEmpty(mAlertRadius.getText())) {
-                    Toast.makeText(MainActivity.this, R.string.please_fill_lengths, Toast.LENGTH_SHORT).show();
-                    return;
-                }
                 mLocationClient = new LocationClient(MainActivity.this, MainActivity.this, MainActivity.this);
                 mLocationClient.connect();
             }
@@ -89,7 +84,7 @@ public class MainActivity extends Activity
             double d = SphericalUtil.computeDistanceBetween(mAnchorLatLng,
                     new LatLng(location.getLatitude(), location.getLongitude()));
             mDistanceTxt.setText(d + "m");
-            if (d > Integer.valueOf(mAlertRadius.getText().toString())) {
+            if (d > Integer.valueOf((String) mAlertRadius.getSelectedItem())) {
                 sendNotification();
             }
         }

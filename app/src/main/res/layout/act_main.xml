@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 />
 
-            <EditText
+            <Spinner
                 android:id="@+id/alert_radius"
                 android:paddingLeft="16dp"
                 android:layout_width="wrap_content"
@@ -37,7 +37,10 @@
                 android:ems="3"
                 android:inputType="number"
                 tools:ignore="RtlHardcoded"
+                android:entries="@array/radiuses"
                 />
+
+            />
 
             <TextView
                 android:text="@string/unit"
